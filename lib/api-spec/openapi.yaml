@@ -1,0 +1,496 @@
+openapi: 3.1.0
+info:
+  # Do not change the title, if the title changes, the import paths will be broken
+  title: Api
+  version: 0.1.0
+  description: Smart Study Planner API
+servers:
+  - url: /api
+    description: Base API path
+tags:
+  - name: health
+    description: Health operations
+  - name: subjects
+    description: Subject management
+  - name: sessions
+    description: Study session management
+  - name: dashboard
+    description: Dashboard statistics
+  - name: notes
+    description: Notes management
+paths:
+  /healthz:
+    get:
+      operationId: healthCheck
+      tags: [health]
+      summary: Health check
+      responses:
+        "200":
+          description: Healthy
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthStatus"
+
+  /subjects:
+    get:
+      operationId: listSubjects
+      tags: [subjects]
+      summary: List all subjects
+      parameters:
+        - name: search
+          in: query
+          schema:
+            type: string
+          description: Search term for filtering subjects
+      responses:
+        "200":
+          description: List of subjects
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Subject"
+    post:
+      operationId: createSubject
+      tags: [subjects]
+      summary: Create a new subject
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SubjectInput"
+      responses:
+        "201":
+          description: Created subject
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Subject"
+        "400":
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /subjects/{id}:
+    get:
+      operationId: getSubject
+      tags: [subjects]
+      summary: Get a subject by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Subject
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Subject"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    put:
+      operationId: updateSubject
+      tags: [subjects]
+      summary: Update a subject
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SubjectUpdate"
+      responses:
+        "200":
+          description: Updated subject
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Subject"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    delete:
+      operationId: deleteSubject
+      tags: [subjects]
+      summary: Delete a subject
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+
+  /subjects/{id}/complete:
+    patch:
+      operationId: toggleSubjectComplete
+      tags: [subjects]
+      summary: Toggle subject completion status
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Updated subject
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Subject"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /sessions:
+    get:
+      operationId: listSessions
+      tags: [sessions]
+      summary: List all study sessions (timetable)
+      responses:
+        "200":
+          description: List of study sessions
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/StudySession"
+    post:
+      operationId: generateTimetable
+      tags: [sessions]
+      summary: Generate a timetable based on subjects
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TimetableConfig"
+      responses:
+        "200":
+          description: Generated sessions
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/StudySession"
+
+  /sessions/{id}/complete:
+    patch:
+      operationId: toggleSessionComplete
+      tags: [sessions]
+      summary: Toggle study session completion
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Updated session
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StudySession"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /dashboard:
+    get:
+      operationId: getDashboard
+      tags: [dashboard]
+      summary: Get dashboard statistics
+      responses:
+        "200":
+          description: Dashboard stats
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DashboardStats"
+
+  /notes:
+    get:
+      operationId: listNotes
+      tags: [notes]
+      summary: List all notes
+      responses:
+        "200":
+          description: List of notes
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Note"
+    post:
+      operationId: createNote
+      tags: [notes]
+      summary: Create a new note
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/NoteInput"
+      responses:
+        "201":
+          description: Created note
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Note"
+        "400":
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /notes/{id}:
+    put:
+      operationId: updateNote
+      tags: [notes]
+      summary: Update a note
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/NoteInput"
+      responses:
+        "200":
+          description: Updated note
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Note"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    delete:
+      operationId: deleteNote
+      tags: [notes]
+      summary: Delete a note
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+
+components:
+  schemas:
+    HealthStatus:
+      type: object
+      properties:
+        status:
+          type: string
+      required:
+        - status
+
+    Subject:
+      type: object
+      required: [id, name, priority, hoursPerDay, completed, createdAt]
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        examDate:
+          type: ["string", "null"]
+          description: ISO date string (YYYY-MM-DD) or null
+        priority:
+          type: string
+          enum: [High, Medium, Low]
+        hoursPerDay:
+          type: number
+        completed:
+          type: boolean
+        topics:
+          type: ["string", "null"]
+          description: Comma-separated topics
+        createdAt:
+          type: string
+
+    SubjectInput:
+      type: object
+      required: [name, priority, hoursPerDay]
+      properties:
+        name:
+          type: string
+          minLength: 1
+        examDate:
+          type: ["string", "null"]
+          description: ISO date string (YYYY-MM-DD) — optional
+        priority:
+          type: string
+          enum: [High, Medium, Low]
+        hoursPerDay:
+          type: number
+          minimum: 0.5
+          maximum: 24
+        topics:
+          type: string
+          description: Comma-separated topics
+
+    SubjectUpdate:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+        examDate:
+          type: ["string", "null"]
+        priority:
+          type: string
+          enum: [High, Medium, Low]
+        hoursPerDay:
+          type: number
+          minimum: 0.5
+          maximum: 24
+        topics:
+          type: string
+
+    StudySession:
+      type: object
+      required: [id, subjectId, subjectName, date, hours, completed, priority]
+      properties:
+        id:
+          type: integer
+        subjectId:
+          type: integer
+        subjectName:
+          type: string
+        date:
+          type: string
+          description: ISO date string (YYYY-MM-DD)
+        hours:
+          type: number
+        completed:
+          type: boolean
+        priority:
+          type: string
+          enum: [High, Medium, Low]
+        topic:
+          type: ["string", "null"]
+
+    TimetableConfig:
+      type: object
+      required: [startDate]
+      properties:
+        startDate:
+          type: string
+          description: ISO date string to start timetable from
+
+    DashboardStats:
+      type: object
+      required: [totalSubjects, completedSubjects, pendingSubjects, totalSessions, completedSessions, progressPercentage, upcomingExams]
+      properties:
+        totalSubjects:
+          type: integer
+        completedSubjects:
+          type: integer
+        pendingSubjects:
+          type: integer
+        totalSessions:
+          type: integer
+        completedSessions:
+          type: integer
+        progressPercentage:
+          type: number
+        upcomingExams:
+          type: array
+          items:
+            $ref: "#/components/schemas/UpcomingExam"
+
+    UpcomingExam:
+      type: object
+      required: [id, name, examDate, priority, daysLeft]
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        examDate:
+          type: string
+        priority:
+          type: string
+          enum: [High, Medium, Low]
+        daysLeft:
+          type: integer
+
+    Note:
+      type: object
+      required: [id, title, body, createdAt, updatedAt]
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+        body:
+          type: string
+        createdAt:
+          type: string
+        updatedAt:
+          type: string
+
+    NoteInput:
+      type: object
+      required: [title]
+      properties:
+        title:
+          type: string
+          minLength: 1
+        body:
+          type: string
+
+    ErrorResponse:
+      type: object
+      required: [error]
+      properties:
+        error:
+          type: string
